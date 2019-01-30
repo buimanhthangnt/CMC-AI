@@ -27,12 +27,11 @@ def get_annotation_data():
     return filenames, labels
 
 
-def is_matched(emb1, emb2, model=config.MODEL):
+def is_matched(emb1, emb2):
     distance = np.sqrt(np.sum(np.square(emb1 - emb2)))
-    if model == 'resnet':
+    if emb1.shape[0] == 2048:
         return distance < 110
-    elif model == 'facenet':
-        # Need to adjust later
+    elif emb1.shape[0] == 128:
         return distance < 1.02
     else:
         return False

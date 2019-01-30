@@ -19,7 +19,6 @@ $ python main.py
 
 Edit configuration in config.py
 
-Default model is Resnet. If you want to use Facenet, run thrift server facenet and edit config MODEL = 'facenet'
 
 ## Pretrained model
 Resnet model is already in "keras_vggface" package
