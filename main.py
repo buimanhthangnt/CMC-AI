@@ -32,7 +32,7 @@ def is_matched(emb1, emb2):
     if emb1.shape[0] == 2048:
         return distance < 110
     elif emb1.shape[0] == 128:
-        return distance < 1.02
+        return distance < 0.78
     else:
         return False
 
