@@ -64,7 +64,7 @@ for idx, fname in enumerate(filenames):
     image_path = os.path.join(config.PUBLIC_TEST_PATH, fname + '.jpg')
     image = cv2.imread(image_path)
     if image is None:
-        print(image_path)
+        print("Image error: ", image_path)
         continue
     if image.shape[-1] == 4:
         image = cv2.cvtColor(image, cv2.COLOR_BGRA2RGB)
@@ -72,7 +72,9 @@ for idx, fname in enumerate(filenames):
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
     bbs, _ = detect_face(image.copy())
-    if len(bbs) == 0: predictions.append(0)
+    if len(bbs) == 0: 
+        print("No face found in: ", image_path)
+        predictions.append(0)
     pred = 0
     for bounding_box in bbs:
         l, t, r, b = bounding_box
@@ -82,6 +84,6 @@ for idx, fname in enumerate(filenames):
             pred = 1
 
     predictions.append(pred)
-    if idx % 100 == 0 and idx != 0:
+    if idx % 10 == 0 and idx != 0:
         print("Image " + str(idx) + "th")
         evaluate(predictions[:idx], labels[:idx])

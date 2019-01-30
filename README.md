@@ -2,22 +2,25 @@
 
 ## Usage
 
+Download dataset at https://drive.google.com/drive/folders/1vfOy2jhDxo6oCpsgzmuMCNsch0FbgLah
+
 Run thrift server, 2 options: Resnet50 and InceptionResnet (facenet)
 ```
 $ python thrift_server_resnet.py
 ```
-or
 ```
 $ python thrift_server_facenet.py
 ```
-Then
+Run evaluation
 ```
 $ python main.py
 ```
 
+
 ## Configuration
 
 Edit configuration in config.py
+
 
 
 ## Pretrained model
