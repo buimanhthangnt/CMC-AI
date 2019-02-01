@@ -62,15 +62,9 @@ filenames, labels = get_annotation_data()
 predictions = []
 for idx, fname in enumerate(filenames):
     image_path = os.path.join(config.PUBLIC_TEST_PATH, fname + '.jpg')
-    image = cv2.imread(image_path)
+    image = utils.load_rgb_image(image_path)
     if image is None:
-        print("Image error: ", image_path)
         continue
-    if image.shape[-1] == 4:
-        image = cv2.cvtColor(image, cv2.COLOR_BGRA2RGB)
-    else:
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-
     bbs, _ = detect_face(image.copy())
     if len(bbs) == 0: 
         print("No face found in: ", image_path)
@@ -79,7 +73,7 @@ for idx, fname in enumerate(filenames):
     for bounding_box in bbs:
         l, t, r, b = bounding_box
         face = image[t:b,l:r]
-        face_emb = np.array(client_thrift.get_emb_numpy([face])[0])
+        face_emb = utils.get_feature_vec(face, fname)
         if is_matched(target_embedding, face_emb):
             pred = 1
 

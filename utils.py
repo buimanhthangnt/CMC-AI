@@ -1,7 +1,35 @@
 import os
 import re
+import cv2
+import config
+import pickle
 import numpy as np
+import client_thrift
 import tensorflow as tf
+
+
+def load_rgb_image(image_path):
+    image = cv2.imread(image_path)
+    if image is None:
+        print("Image error: ", image_path)
+        return image
+    if image.shape[-1] == 4:
+        image = cv2.cvtColor(image, cv2.COLOR_BGRA2RGB)
+    else:
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    return image
+
+
+def get_feature_vec(face, fname):
+    if not os.path.exists(config.VECTORS_PATH):
+        os.makedirs(config.VECTORS_PATH)
+    fpath = os.path.join(config.VECTORS_PATH, fname + '.pkl')
+    if os.path.exists(fpath):
+        face_emb = pickle.load(open(fpath, 'rb'))
+    else:
+        face_emb = np.array(client_thrift.get_emb_numpy([face])[0])
+        pickle.dump(face_emb, open(fpath, 'wb'), pickle.HIGHEST_PROTOCOL)
+    return face_emb
 
 
 def prewhiten(x):

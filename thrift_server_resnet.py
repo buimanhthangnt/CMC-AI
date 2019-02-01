@@ -29,34 +29,38 @@ class FaceEmbeddingHandler:
         images = np.array(images)
         images = utils.preprocess_input(images, version=2)
         with graph.as_default():
-            embeddings = vgg_features.predict(images)
+            with sess.as_default():
+                embeddings = vgg_features.predict(images)
         embeddings.shape = (-1, 2048)
         return embeddings
 
 
 def main():
     print('Loading model...')
+    global sess
     global graph
     global vgg_features
     global image_size
 
+    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.1)
     with tf.Graph().as_default() as graph:
-        vgg_features = VGGFace(model='resnet50', include_top=False, pooling='avg')
-        # vgg_features = load_model('resnet_model/resnet50.h5')
-        image_size = 224
-        handler = FaceEmbeddingHandler()
-        processor = FaceEmbedding.Processor(handler)
-        transport = TSocket.TServerSocket(
-            host='0.0.0.0', port=config.SERVER_THRIFT_PORT)
-        tfactory = TTransport.TBufferedTransportFactory()
-        pfactory = TBinaryProtocol.TBinaryProtocolFactory()
-        server = TServer.TThreadedServer(
-            processor, transport, tfactory, pfactory)
-        print('READY')
-        try:
-            server.serve()
-        except KeyboardInterrupt:
-            pass
+        with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)).as_default() as sess:
+            vgg_features = VGGFace(model='resnet50', include_top=False, pooling='avg')
+            # vgg_features = load_model('resnet_model/resnet50.h5')
+            image_size = 224
+            handler = FaceEmbeddingHandler()
+            processor = FaceEmbedding.Processor(handler)
+            transport = TSocket.TServerSocket(
+                host='0.0.0.0', port=config.SERVER_THRIFT_PORT)
+            tfactory = TTransport.TBufferedTransportFactory()
+            pfactory = TBinaryProtocol.TBinaryProtocolFactory()
+            server = TServer.TThreadedServer(
+                processor, transport, tfactory, pfactory)
+            print('READY')
+            try:
+                server.serve()
+            except KeyboardInterrupt:
+                pass
 
 
 if __name__ == '__main__':
