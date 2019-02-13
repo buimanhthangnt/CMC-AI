@@ -9,7 +9,8 @@ from face_detection import detect_face
 import pandas as pd
 import numpy as np
 from sklearn.utils import shuffle
-
+import pickle as pkl
+from scipy import spatial
 
 def get_target_face():
     rgb_image = imread(config.SAMPLE_IMAGE_PATH)
@@ -22,12 +23,11 @@ def get_target_face():
 
 def get_annotation_data():
     data = pd.read_csv(config.ANNOTATION_PATH).values
-    filenames = data[:,0]
     labels = data[:,-1]
-    return filenames, labels
+    return labels
 
 
-def is_matched(emb1, emb2):
+def is_matched_euclidean(emb1, emb2):
     distance = np.sqrt(np.sum(np.square(emb1 - emb2)))
     if emb1.shape[0] == 2048:
         return distance < 110
@@ -36,6 +36,19 @@ def is_matched(emb1, emb2):
     else:
         return False
 
+def is_matched_cosine(emb1, emb2):
+    similarity = 1 - spatial.distance.cosine(emb1, emb2)
+    return abs(similarity) > 0.58
+
+def is_matched_combine(emb1, emb2):
+    cosine = 1 - spatial.distance.cosine(emb1, emb2)
+    distance = np.sqrt(np.sum(np.square(emb1 - emb2)))
+    if emb1.shape[0] == 2048:
+        return distance < 120 and abs(cosine) > 0.58
+    elif emb1.shape[0] == 128:
+        return distance < 0.78 and abs(cosine) > 0.58
+    else:
+        return False
 
 def evaluate(predictions, labels):
     TP, FP, FN = 0, 0, 0
@@ -46,35 +59,31 @@ def evaluate(predictions, labels):
             FP += 1
         elif predictions[i] == 0 and labels[i] == 1:
             FN += 1
-    precision = TP / (TP + FP)
-    recall = TP / (TP + FN)
-    F1_score = 2 * precision * recall / (recall + precision)
-    print("Precision: ", precision)
-    print("Recall: ", recall)
-    print("F1: ", F1_score)
-
+    try:
+        precision = TP / (TP + FP)
+        recall = TP / (TP + FN)
+        F1_score = 2 * precision * recall / (recall + precision)
+        print("Precision: ", precision)
+        print("Recall: ", recall)
+        print("F1: ", F1_score)
+    except:
+        pass
 
 target_face = get_target_face()
 target_embedding = np.array(client_thrift.get_emb_numpy([target_face])[0])
 
-filenames, labels = get_annotation_data()
+labels = get_annotation_data()
+if target_embedding.shape[0] ==2048: 
+    test_features = pkl.load(open("data/publictest_resnetfeatures.p","rb"))
+else: test_features = pkl.load(open("data/publictest_facenetfeatures.p","rb"))
 
 predictions = []
-for idx, fname in enumerate(filenames):
-    image_path = os.path.join(config.PUBLIC_TEST_PATH, fname + '.jpg')
-    image = utils.load_rgb_image(image_path)
-    if image is None:
-        continue
-    bbs, _ = detect_face(image.copy())
-    if len(bbs) == 0: 
-        print("No face found in: ", image_path)
+for idx, img in enumerate(test_features):
+    if len(img)==0:
         predictions.append(0)
-    pred = 0
-    for bounding_box in bbs:
-        l, t, r, b = bounding_box
-        face = image[t:b,l:r]
-        face_emb = utils.get_feature_vec(face, fname)
-        if is_matched(target_embedding, face_emb):
+    pred = 0    
+    for vec in img:
+        if is_matched_combine(target_embedding, vec):
             pred = 1
 
     predictions.append(pred)
