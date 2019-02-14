@@ -24,21 +24,22 @@ def get_target_face():
 def get_annotation_data():
     data = pd.read_csv(config.ANNOTATION_PATH).values
     labels = data[:,-1]
-    return labels
+    imgs = data[:,0]
+    return labels, imgs
 
 
 def is_matched_euclidean(emb1, emb2):
     distance = np.sqrt(np.sum(np.square(emb1 - emb2)))
     if emb1.shape[0] == 2048:
-        return distance < 110
+        return distance,distance < 114
     elif emb1.shape[0] == 128:
-        return distance < 0.78
+        return distance,distance < 0.78
     else:
         return False
 
 def is_matched_cosine(emb1, emb2):
     similarity = 1 - spatial.distance.cosine(emb1, emb2)
-    return abs(similarity) > 0.58
+    return similarity, abs(similarity) > 0.601
 
 def is_matched_combine(emb1, emb2):
     cosine = 1 - spatial.distance.cosine(emb1, emb2)
@@ -72,7 +73,7 @@ def evaluate(predictions, labels):
 target_face = get_target_face()
 target_embedding = np.array(client_thrift.get_emb_numpy([target_face])[0])
 
-labels = get_annotation_data()
+labels, imgs = get_annotation_data()
 if target_embedding.shape[0] ==2048: 
     test_features = pkl.load(open("data/publictest_resnetfeatures.p","rb"))
 else: test_features = pkl.load(open("data/publictest_facenetfeatures.p","rb"))
@@ -83,8 +84,17 @@ for idx, img in enumerate(test_features):
         predictions.append(0)
     pred = 0    
     for vec in img:
-        if is_matched_combine(target_embedding, vec):
+        sim,matched = is_matched_cosine(target_embedding, vec)
+        if matched:
             pred = 1
+    #     print(idx,sim)
+    # if pred==0 and labels[idx]==1 and len(img) != 0:
+    #     try:
+    #         img = cv2.imread(os.path.join(config.PUBLIC_TEST_PATH, imgs[idx] + '.jpg'))
+    #         cv2.imshow('result', img )
+    #         cv2.waitKey(0)
+    #     except:
+    #         pass       
 
     predictions.append(pred)
     if idx % 10 == 0 and idx != 0:
