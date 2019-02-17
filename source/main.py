@@ -1,16 +1,12 @@
-import cv2
 from imageio import imread
 import os
-import glob
 import client_thrift
 import utils
 import config
 from face_detection import detect_face
-import pandas as pd
 import numpy as np
 import csv
 from scipy import spatial
-from sklearn.utils import shuffle
 
 
 def get_target_face():
@@ -22,46 +18,18 @@ def get_target_face():
     return rgb_image[t:b,l:r]
 
 
-def get_annotation_data():
-    data = pd.read_csv(config.ANNOTATION_PATH).values
-    filenames = data[:,0]
-    labels = data[:,-1]
-    return filenames, labels
-
-
 def is_matched(emb1, emb2):
     similarity = 1 - spatial.distance.cosine(emb1, emb2)
     return abs(similarity) > 0.601
 
 
-def evaluate(predictions, labels):
-    TP, FP, FN = 0, 0, 0
-    for i in range(len(predictions)):
-        if int(predictions[i]) == 1 and labels[i] == 1:
-            TP += 1
-        elif int(predictions[i]) == 1 and labels[i] == 0:
-            FP += 1
-        elif int(predictions[i]) == 0 and labels[i] == 1:
-            FN += 1
-    try:
-        precision = TP / (TP + FP)
-        recall = TP / (TP + FN)
-        F1_score = 2 * precision * recall / (recall + precision)
-        print("Precision: ", precision)
-        print("Recall: ", recall)
-        print("F1: ", F1_score)
-    except:
-        pass
-
-
 target_face = get_target_face()
 target_embedding = np.array(client_thrift.get_emb_numpy([target_face])[0])
 
-filenames, labels = get_annotation_data()
-
 predictions = []
-for idx, fname in enumerate(filenames):
-    image_path = os.path.join(config.PUBLIC_TEST_PATH, fname + '.jpg')
+print("Running")
+for idx, fname in enumerate(sorted(os.listdir(config.PUBLIC_TEST_PATH))):
+    image_path = os.path.join(config.PUBLIC_TEST_PATH, fname)
     image = utils.load_rgb_image(image_path)
     pred, bb = 0, None
     if image is not None:
@@ -75,6 +43,7 @@ for idx, fname in enumerate(filenames):
             if is_matched(target_embedding, face_emb):
                 pred = 1
                 bb = bounding_box
+    fname = fname.rsplit('.')[0]
     if pred == 0:
         predictions.append([fname, 0, 0, 0, 0, pred])
     else:
@@ -82,12 +51,10 @@ for idx, fname in enumerate(filenames):
         tmp.extend(bb)
         tmp.append(pred)
         predictions.append(tmp)
-    if idx % 10 == 0 and idx != 0:
+    if idx % 100 == 0 and idx != 0:
         print("Image " + str(idx) + "th")
-    if idx > 1100:
-        break
-
-evaluate(np.array(predictions)[:,-1], labels)
+    # if idx > 100:
+    #     break
 
 csv_content = [["image", "x1", "y1", "x2", "y2", "result"]]
 csv_content.extend(predictions)
