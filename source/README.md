@@ -1,6 +1,7 @@
 # CMC AI Contest
 
 Group ID: a170!24
+
 Members: Luong Tuan Dung, Bui Manh Thang, Bui Duy Tuan
 
 ## Installation
