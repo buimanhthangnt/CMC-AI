@@ -18,9 +18,22 @@ def get_target_face():
     return rgb_image[t:b,l:r]
 
 
-def is_matched(emb1, emb2):
+def euclide_dist(emb1, emb2):
+    distance = np.linalg.norm(emb1 - emb2)
+    return distance
+
+
+def cosine_dist(emb1, emb2):
     similarity = 1 - spatial.distance.cosine(emb1, emb2)
-    return abs(similarity) > 0.601
+    return similarity
+
+
+def is_matched(emb1, emb2):
+    euc = np.linalg.norm(emb1 - emb2)
+    cos = 1 - spatial.distance.cosine(emb1, emb2)
+    gs = pickle.load(open('best_model/gs.pkl', 'rb'))
+    pred = gs.predict_proba([[euc, cos]])[0]
+    return pred[1] >= 0.575
 
 
 target_face = get_target_face()
