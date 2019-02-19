@@ -6,6 +6,7 @@ import config
 from face_detection import detect_face
 import numpy as np
 import csv
+import pickle
 from scipy import spatial
 
 
