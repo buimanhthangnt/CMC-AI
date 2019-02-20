@@ -91,7 +91,7 @@ labels, imgs, coords = get_annotation_data(config.ANNOTATION_PATH)
 #     image = cv2.imread(os.path.join(config.PUBLIC_TEST_PATH, fname + '.jpg'))
 #     ret, _ = detect_face(image.copy()[:,:,::-1])
 #     for bb in ret:
-#         l, t, r, b = bb
+#         l, t, r, b = utils.add_padding(image, bb, (0.12, 0.08), padding=True)
 #         cv2.rectangle(image, (l,t), (r,b), (255,0,0), 2)
 #     l, t, r, b = coords[idx]
 #     cv2.rectangle(image, (l,t), (r,b), (0,255,0), 2)

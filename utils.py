@@ -77,3 +77,12 @@ def get_model_filenames(model_dir):
                 max_step = step
                 ckpt_file = step_str.groups()[0]
     return meta_file, ckpt_file
+
+
+def add_padding(img, locations, offsets, padding=False):
+    l, t, r, b = locations
+    xw1 = max(int(l - offsets[0] * (r - l)), 0)
+    yw1 = max(int(t - offsets[1] * (b - t)), 0)
+    xw2 = min(int(r + offsets[0] * (r - l)), img.shape[1] - 1)
+    yw2 = min(int(b + offsets[1] * (b - t)), img.shape[0] - 1)
+    return xw1, yw1, xw2, yw2
