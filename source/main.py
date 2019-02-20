@@ -62,7 +62,7 @@ for idx, fname in enumerate(sorted(os.listdir(config.PUBLIC_TEST_PATH))):
         predictions.append([fname, 0, 0, 0, 0, pred])
     else:
         tmp = [fname]
-        tmp.extend(bb)
+        tmp.extend(utils.add_padding(image, bb, (0.12, 0.08)))
         tmp.append(pred)
         predictions.append(tmp)
     if idx % 100 == 0 and idx != 0:
