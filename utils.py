@@ -25,10 +25,10 @@ def get_feature_vec(face, fname):
     #     os.makedirs(config.VECTORS_PATH)
     # fpath = os.path.join(config.VECTORS_PATH, fname + '.pkl')
     # if os.path.exists(fpath):
-    #     face_emb = pickle.load(open(fpath, 'rb'))
+        # face_emb = pickle.load(open(fpath, 'rb'))
     # else:
     face_emb = np.array(client_thrift.get_emb_numpy([face])[0])
-        # pickle.dump(face_emb, open(fpath, 'wb'), pickle.HIGHEST_PROTOCOL)
+    # pickle.dump(face_emb, open(fpath, 'wb'), pickle.HIGHEST_PROTOCOL)
     return face_emb
 
 
