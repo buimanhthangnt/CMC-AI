@@ -6,7 +6,7 @@ Members: Luong Tuan Dung, Bui Manh Thang, Bui Duy Tuan
 
 ## Installation
 
-Environment: Ubuntu 16.04, Python 3.5+
+Environment: Ubuntu 16.04, Python 3.5+ (virutal environment is recommended)
 
 Install dependencies
 ```

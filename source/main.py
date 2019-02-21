@@ -8,6 +8,8 @@ import numpy as np
 import csv
 import pickle
 from scipy import spatial
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning)
 
 
 def get_target_face():
