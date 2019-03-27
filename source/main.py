@@ -8,6 +8,7 @@ import numpy as np
 import csv
 import pickle
 from scipy import spatial
+import sys
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
 
@@ -36,7 +37,14 @@ target_embedding = utils.get_feature_vec(target_face)
 
 predictions = []
 print("Running")
-for idx, fname in enumerate(sorted(os.listdir(config.PUBLIC_TEST_PATH))):
+
+input_f = sorted(os.listdir(config.PUBLIC_TEST_PATH))
+num = len(input_f)
+iii = int(sys.argv[1])
+data = input_f[:num//2] if iii == 0 else input_f[num//2:]
+print(len(data))
+
+for idx, fname in enumerate(data):
     image_path = os.path.join(config.PUBLIC_TEST_PATH, fname)
     image = utils.load_rgb_image(image_path)
     pred, bb = 0, None
@@ -64,6 +72,8 @@ for idx, fname in enumerate(sorted(os.listdir(config.PUBLIC_TEST_PATH))):
     # if idx > 100:
     #     break
 
+pickle.dump(predictions, open(str(iii) + ".pkl", "wb"), pickle.HIGHEST_PROTOCOL)
+exit(0)
 csv_content = [["image", "x1", "y1", "x2", "y2", "result"]]
 csv_content.extend(predictions)
 with open('output.csv', 'w') as fn:
