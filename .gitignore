@@ -2,3 +2,4 @@ data
 **__pycache__
 facenet_model
 *pyc
+source/insightface/models

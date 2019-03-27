@@ -18,29 +18,21 @@ def get_target_face():
     if len(ret) <= 0:
         raise Exception('no face in sample image')
     l, t, r, b = ret[0]
-    return rgb_image[t:b,l:r]
-
-
-def euclide_dist(emb1, emb2):
-    distance = np.linalg.norm(emb1 - emb2)
-    return distance
+    return rgb_image
 
 
 def cosine_dist(emb1, emb2):
-    similarity = 1 - spatial.distance.cosine(emb1, emb2)
-    return similarity
+    return spatial.distance.cosine(emb1, emb2)
 
 
 def is_matched(emb1, emb2):
-    euc = np.linalg.norm(emb1 - emb2)
-    cos = 1 - spatial.distance.cosine(emb1, emb2)
-    gs = pickle.load(open('best_model/gs.pkl', 'rb'))
-    pred = gs.predict_proba([[euc, cos]])[0]
-    return pred[1] >= 0.575
+    cos = cosine_dist(emb1, emb2)
+    # print(cos)
+    return cos <= 0.7
 
 
 target_face = get_target_face()
-target_embedding = np.array(client_thrift.get_emb_numpy([target_face])[0])
+target_embedding = utils.get_feature_vec(target_face)
 
 predictions = []
 print("Running")
@@ -53,7 +45,7 @@ for idx, fname in enumerate(sorted(os.listdir(config.PUBLIC_TEST_PATH))):
         if len(bbs) == 0: 
             print("No face found in: ", image_path)
         for idx2, bounding_box in enumerate(bbs):
-            l, t, r, b = bounding_box
+            l, t, r, b = utils.add_padding(image, bounding_box, (0.2, 0.2))
             face = image[t:b,l:r]
             face_emb = utils.get_feature_vec(face, fname + str(idx2))
             if is_matched(target_embedding, face_emb):
