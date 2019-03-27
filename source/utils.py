@@ -4,7 +4,7 @@ import cv2
 import config
 import pickle
 import numpy as np
-import client_thrift
+# import client_thrift
 import tensorflow as tf
 from insightface.deploy.feature_extraction import get_emb
 

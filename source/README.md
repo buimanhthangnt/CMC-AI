@@ -10,15 +10,10 @@ Environment: Ubuntu 16.04, Python 3.5+ (virutal environment is recommended)
 
 Install dependencies
 ```
-$ pip install tensorflow numpy opencv-python thrift imageio pandas scipy scikit-learn keras_vggface keras==2.2.0
+$ pip install tensorflow numpy mxnet easydict opencv-python imageio pandas scipy scikit-learn scikit-image
 ```
 
 ## Usage
-
-Open terminal at source folder
-```
-$ python thrift_server_resnet.py
-```
 
 Change path to data in config.py
 
